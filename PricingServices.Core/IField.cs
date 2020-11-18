@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PricingServices.Core
+﻿namespace PricingServices.Core
 {
     public interface IField
     {

@@ -19,16 +19,16 @@ namespace PricingServices.Client.Console
                 SetSecuritiesList(new List<string> {
                     "AAPL US Equity",
                     "GBP",
-                    "AS5533318 CORP",
+                    "AS5533318 Corp",
                     "AN4198411 Corp",
-                    "EI5630724 GOVT",
+                    "EI5630724 Govt",
                     "AD NA Equity",
-                    "AMZN US EQUITY",
-                    "GOOG US EQUITY",
+                    "AMZN US Equity",
+                    "GOOG US Equity",
                     "GOOGL US Equity",
-                    "MERNEWA LX EQUITY",
-                    "MORGBZH LX EQUITY",
-                    "TAGCI SW EQUITY"
+                    "MERNEWA LX Equity",
+                    "MORGBZH LX Equity",
+                    "TAGCI SW Equity"
                 }).
                 SetFieldsList(new List<string>
                 {

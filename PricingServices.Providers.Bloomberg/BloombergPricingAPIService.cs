@@ -341,7 +341,8 @@ namespace PricingServices.Providers.Bloomberg
                     await DownloadDistribution(replyUrl, outputFilePath);
                     Console.WriteLine("Reply was downloaded, exit now");
                     FileInfo outputFile = new FileInfo(outputFilePath);
-                    var newFileName = UnzipFile(outputFile);
+                    var responseFileName = UnzipFile(outputFile);
+                    ProcessFile(responseFileName);
                     return;
                 }
             }
@@ -353,7 +354,6 @@ namespace PricingServices.Providers.Bloomberg
             using FileStream originalFileStream = fileToDecompress.OpenRead();
             string currentFileName = fileToDecompress.FullName;
             string newFileName = currentFileName.Remove(currentFileName.Length - fileToDecompress.Extension.Length);
-
             using (FileStream decompressedFileStream = File.Create(newFileName))
             {
                 using GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress);
@@ -361,6 +361,30 @@ namespace PricingServices.Providers.Bloomberg
                 Console.WriteLine($"Decompressed: {fileToDecompress.Name}");
             }
             return newFileName;
+        }
+
+        public static void ProcessFile(string responseFileName)
+        {
+            var startReadingData = false;
+            var lineNumber = 0;
+            var lines = File.ReadLines(responseFileName);
+            foreach (var line in lines)
+            {
+                if (line == "START-OF-DATA") startReadingData = true;
+                if (line == "END-OF-DATA") startReadingData = false;
+                if (startReadingData)
+                {
+                    lineNumber++;
+                    if(lineNumber == 1)
+                    {
+
+                    }
+                    else
+                    {
+
+                    }
+                }
+            }
         }
     }
 }
