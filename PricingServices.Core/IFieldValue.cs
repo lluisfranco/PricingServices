@@ -2,7 +2,7 @@
 {
     public interface IFieldValue
     {
-        IField Field { get; set; }
+        string Name { get; set; }
         string Value { get; set; }
     }
 }

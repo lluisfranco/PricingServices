@@ -1,11 +1,11 @@
-﻿using System.Text.Json.Serialization;
+﻿using PricingServices.Core;
+using System.Text.Json.Serialization;
 
 namespace PricingServices.Providers.Bloomberg.Model
 {
-    public class Field
+    public class Field : IField
     {
         [JsonPropertyNameAttribute("cleanName")]
         public string CleanName { get; set; }
     }
-
 }

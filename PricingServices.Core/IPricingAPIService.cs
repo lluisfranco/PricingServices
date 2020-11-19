@@ -9,8 +9,8 @@ namespace PricingServices.Core
         List<string> FieldsList { get; }
         IPricingAPIService SetSecuritiesList(List<string> securitiesList);
         IPricingAPIService SetFieldsList(List<string> fieldsList);
-        IPricingAPIService SetCredentials(ServiceCredential serviceCredential);
+        IPricingAPIService SetCredentials(ServiceCredentials serviceCredential);
         IPricingAPIService InitializeSession();
-        Task RequestDataAsync();
+        Task<List<ISecurityValues>> RequestDataAsync();
     }
 }

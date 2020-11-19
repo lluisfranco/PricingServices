@@ -27,6 +27,9 @@ namespace PricingServices.Providers.Bloomberg
         public List<string> SecuritiesList { get; private set; }
         public List<string> FieldsList { get; private set; }
         public Credential Credential { get; private set; } = null;
+
+        readonly string RequestDelimiter = "|";
+
         public BloombergPricingAPIService()
         {
             // Generate unique resource indentifiers.
@@ -35,10 +38,9 @@ namespace PricingServices.Providers.Bloomberg
             FieldListId = $"myFieldList{resourceIdPostfix}";
             TriggerId = $"myTrigger{resourceIdPostfix}";
             RequestId = $"myReq{resourceIdPostfix}";
-
         }
 
-        public IPricingAPIService SetCredentials(ServiceCredential serviceCredential)
+        public IPricingAPIService SetCredentials(ServiceCredentials serviceCredential)
         {
             Credential = new Credential()
             {
@@ -116,7 +118,6 @@ namespace PricingServices.Providers.Bloomberg
 
             return scheduledCatalog.Identifier;
         }
-
 
         private async Task<string> CreateUniverse(string catalog)
         {
@@ -218,7 +219,7 @@ namespace PricingServices.Providers.Bloomberg
                     Type = "DataFormat",
                     ColumnHeader = true,
                     DateFormat = "yyyymmdd",
-                    Delimiter = "|",
+                    Delimiter = RequestDelimiter,
                     FileType = "unixFileType",
                     OutputFormat = "variableOutputFormat"
                 },
@@ -265,7 +266,7 @@ namespace PricingServices.Providers.Bloomberg
             Console.WriteLine();
         }
 
-        public async Task RequestDataAsync()
+        public async Task<List<ISecurityValues>> RequestDataAsync()
         {
             //  Create an SSE session to receive notification when reply is delivered
             using (var sseClient = new Sse.SseClient(MakeUri("/eap/notifications/sse"), BeapSession))
@@ -333,20 +334,20 @@ namespace PricingServices.Providers.Bloomberg
                         Console.WriteLine("Some other delivery occurred - continue waiting");
                         continue;
                     }
-
                     // Prepare for storing reply file.
-                    var outputFolder = Directory.CreateDirectory(OutputPath);
+                    Directory.CreateDirectory(OutputPath);
                     var outputFilePath = Path.Combine(OutputPath, $"{deliveryDistributionId}.gz");
                     // Download reply file from server.
                     await DownloadDistribution(replyUrl, outputFilePath);
-                    Console.WriteLine("Reply was downloaded, exit now");
+                    Console.WriteLine($"Reply file was downloaded: {outputFilePath}");
                     FileInfo outputFile = new FileInfo(outputFilePath);
                     var responseFileName = UnzipFile(outputFile);
-                    ProcessFile(responseFileName);
-                    return;
+                    Console.WriteLine($"File was unzipped: {responseFileName}");
+                    return ProcessFile(responseFileName);
                 }
             }
             Console.WriteLine("Reply NOT delivered, try to increase waiter loop timeout");
+            return null;
         }
 
         public static string UnzipFile(FileInfo fileToDecompress)
@@ -363,8 +364,9 @@ namespace PricingServices.Providers.Bloomberg
             return newFileName;
         }
 
-        public static void ProcessFile(string responseFileName)
+        public List<ISecurityValues> ProcessFile(string responseFileName)
         {
+            var SecuritiesValues = new List<ISecurityValues>();
             var startReadingData = false;
             var lineNumber = 0;
             var lines = File.ReadLines(responseFileName);
@@ -374,17 +376,35 @@ namespace PricingServices.Providers.Bloomberg
                 if (line == "END-OF-DATA") startReadingData = false;
                 if (startReadingData)
                 {
+                    var columnNames = new List<string>();
+                    var securityValues = new SecurityValues() { RawValue = line };
                     lineNumber++;
-                    if(lineNumber == 1)
+                    if (lineNumber == 1) continue;
+                    if (lineNumber == 2)
                     {
-
+                        columnNames = line.Split(RequestDelimiter).ToList();
                     }
-                    else
+                    if (lineNumber > 2)
                     {
-
+                        var columnValues = line.Split(RequestDelimiter).ToList();
+                        securityValues.SecurityName = columnValues[0];
+                        securityValues.ErrorCode = columnValues[1];
+                        for (int colindex = 3; colindex < columnValues.Count; colindex++)
+                        {
+                            var fieldValue = new FieldValue()
+                            {
+                                Name = columnNames[colindex],
+                                Value = columnValues[colindex]
+                            };
+                            if (!string.IsNullOrWhiteSpace(fieldValue.Name)) 
+                                securityValues.FieldValues.Add(fieldValue);
+                        }     
+                        SecuritiesValues.Add(securityValues);
                     }
                 }
             }
+            Console.WriteLine("File was processed");
+            return SecuritiesValues;
         }
     }
 }

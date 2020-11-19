@@ -1,6 +1,6 @@
 ﻿namespace PricingServices.Core
 {
-    public class ServiceCredential
+    public class ServiceCredentials
     {
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }

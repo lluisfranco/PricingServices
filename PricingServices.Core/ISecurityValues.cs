@@ -4,7 +4,7 @@ namespace PricingServices.Core
 {
     public interface ISecurityValues
     {
-        ISecurity Security { get; set; }
+        string SecurityName { get; set; }
         List<IFieldValue> FieldValues { get; set; }
         string ErrorCode { get; set; }
         string RawValue { get; set; }

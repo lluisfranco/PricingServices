@@ -10,15 +10,17 @@ namespace PricingServices.Client.Console
         {
             System.Console.WriteLine("Hello Bloomberg API!");
             var bloombergService = Builder.GetPricingService().
-                SetCredentials(new ServiceCredential()
+                SetCredentials(new ServiceCredentials()
                 {
                     ClientId = "1e6e5c12b273505793bff2f9df21107f",
                     ClientSecret = "a1cd3e8a0453cee37635f60f16d2a95a3fe1c807b0dcaf07bdc2ee057638c621",
                     ExpirationDate = 1652364986947
                 }).
                 SetSecuritiesList(new List<string> {
+                    "EUR Curncy",
+                    "USD Curncy",
+                    "GBP Curncy",
                     "AAPL US Equity",
-                    "GBP",
                     "AS5533318 Corp",
                     "AN4198411 Corp",
                     "EI5630724 Govt",
@@ -42,7 +44,20 @@ namespace PricingServices.Client.Console
                     "leiUltimateParentCompany"
                 }).
                 InitializeSession();
-            await bloombergService.RequestDataAsync();
+            var data = await bloombergService.RequestDataAsync();
+            Dump(data);
+        }
+
+        private static void Dump(List<ISecurityValues> data)
+        {
+            foreach (var sec in data)
+            {
+                System.Console.WriteLine($"SECURITY: {sec.SecurityName}");
+                foreach (var value in sec.FieldValues)
+                {
+                    System.Console.WriteLine($"    FIELD: {value.Name} = {value.Value}");
+                }
+            }
         }
     }
 }
