@@ -162,6 +162,9 @@ namespace PricingServices.Providers.Bloomberg
             }
             if (security.Type == SecurityInfo.SecurityInfoTypeEnum.Asset)
             {
+                if (!security.Name.Contains("CORP")) return security.Name.Replace("CORP", "Corp");
+                if (!security.Name.Contains("GOVT")) return security.Name.Replace("CORP", "Corp");
+                if (!security.Name.Contains("EQUITY")) return security.Name.Replace("EQUITY", "Equity");
                 return security.Name;
             }
             return security.Name;
