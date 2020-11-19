@@ -22,9 +22,9 @@ namespace PricingServices.Providers.Bloomberg
         private readonly string FieldListId;
         private readonly string TriggerId;
         private readonly string RequestId;
-        private const string OutputPath = "samples";
+        private const string OutputPath = "TempFiles";
 
-        public List<string> SecuritiesList { get; private set; }
+        public List<SecurityInfo> SecuritiesList { get; private set; }
         public List<string> FieldsList { get; private set; }
         public Credential Credential { get; private set; } = null;
 
@@ -51,7 +51,7 @@ namespace PricingServices.Providers.Bloomberg
             return this;
         }
 
-        public IPricingAPIService SetSecuritiesList(List<string> securitiesList)
+        public IPricingAPIService SetSecuritiesList(List<SecurityInfo> securitiesList)
         {
             SecuritiesList = securitiesList;
             return this;
@@ -140,8 +140,31 @@ namespace PricingServices.Providers.Bloomberg
             {
                 Type = "Identifier",
                 IdentifierType = "TICKER",
-                IdentifierValue = security
+                IdentifierValue = FixSecurityName(security)
             });
+        }
+
+        //Bloomberg API is case sentitive
+        //CORP, GOVT, EQUITY must be Corp, Govt, Equity
+        //In currencies must be added Curncy sufix 
+        private string FixSecurityName(SecurityInfo security)
+        {
+            if (security.Type == SecurityInfo.SecurityInfoTypeEnum.Currency)
+            {
+                if (!security.Name.Contains("Curncy"))
+                {
+                    return $"{security.Name} Curncy";
+                }
+                else
+                {
+                    return security.Name;
+                }
+            }
+            if (security.Type == SecurityInfo.SecurityInfoTypeEnum.Asset)
+            {
+                return security.Name;
+            }
+            return security.Name;
         }
 
         private async Task<string> CreateFieldList(string catalog)
@@ -370,13 +393,14 @@ namespace PricingServices.Providers.Bloomberg
             var startReadingData = false;
             var lineNumber = 0;
             var lines = File.ReadLines(responseFileName);
+            var columnNames = new List<string>();
             foreach (var line in lines)
             {
                 if (line == "START-OF-DATA") startReadingData = true;
                 if (line == "END-OF-DATA") startReadingData = false;
                 if (startReadingData)
                 {
-                    var columnNames = new List<string>();
+                    
                     var securityValues = new SecurityValues() { RawValue = line };
                     lineNumber++;
                     if (lineNumber == 1) continue;
@@ -389,16 +413,19 @@ namespace PricingServices.Providers.Bloomberg
                         var columnValues = line.Split(RequestDelimiter).ToList();
                         securityValues.SecurityName = columnValues[0];
                         securityValues.ErrorCode = columnValues[1];
-                        for (int colindex = 3; colindex < columnValues.Count; colindex++)
+                        if (securityValues.ErrorCode == "0")
                         {
-                            var fieldValue = new FieldValue()
+                            for (int colindex = 3; colindex < columnValues.Count; colindex++)
                             {
-                                Name = columnNames[colindex],
-                                Value = columnValues[colindex]
-                            };
-                            if (!string.IsNullOrWhiteSpace(fieldValue.Name)) 
-                                securityValues.FieldValues.Add(fieldValue);
-                        }     
+                                var fieldValue = new FieldValue()
+                                {
+                                    Name = columnNames[colindex],
+                                    Value = columnValues[colindex]
+                                };
+                                if (!string.IsNullOrWhiteSpace(fieldValue.Name))
+                                    securityValues.FieldValues.Add(fieldValue);
+                            }
+                        }                         
                         SecuritiesValues.Add(securityValues);
                     }
                 }

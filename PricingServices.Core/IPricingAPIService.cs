@@ -5,12 +5,13 @@ namespace PricingServices.Core
 {
     public interface IPricingAPIService
     {
-        List<string> SecuritiesList { get; }
+        List<SecurityInfo> SecuritiesList { get; }
         List<string> FieldsList { get; }
-        IPricingAPIService SetSecuritiesList(List<string> securitiesList);
+        IPricingAPIService SetSecuritiesList(List<SecurityInfo> securitiesList);
         IPricingAPIService SetFieldsList(List<string> fieldsList);
         IPricingAPIService SetCredentials(ServiceCredentials serviceCredential);
         IPricingAPIService InitializeSession();
         Task<List<ISecurityValues>> RequestDataAsync();
+        List<ISecurityValues> ProcessFile(string responseFileName);
     }
 }
