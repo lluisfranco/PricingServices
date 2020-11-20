@@ -8,7 +8,7 @@ namespace PricingServices.Client.Console
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             System.Console.WriteLine("Hello Bloomberg API!");
             var bloombergService = Builder.GetPricingService().
@@ -19,15 +19,15 @@ namespace PricingServices.Client.Console
                     ExpirationDate = 1652364986947
                 }).
                 SetSecuritiesList(new List<SecurityInfo> {
+                    new SecurityInfo() { Name = "AAPL US EQUITY" },
+                    new SecurityInfo() { Name = "AS5533318 CORP" },
+                    new SecurityInfo() { Name = "AN4198411 corp" },
+                    new SecurityInfo() { Name = "EI5630724 GOVT" },
+                    new SecurityInfo() { Name = "AD NA EQuity" },
                     new SecurityInfo() { Name = "CAC Index" },
                     new SecurityInfo() { Name = "EUR", Type = SecurityInfoTypeEnum.Currency },
                     new SecurityInfo() { Name = "USD" , Type = SecurityInfoTypeEnum.Currency},
                     new SecurityInfo() { Name = "GBP" , Type = SecurityInfoTypeEnum.Currency},
-                    new SecurityInfo() { Name = "AAPL US Equity" },
-                    new SecurityInfo() { Name = "AS5533318 Corp" },
-                    new SecurityInfo() { Name = "AN4198411 Corp" },
-                    new SecurityInfo() { Name = "EI5630724 Govt" },
-                    new SecurityInfo() { Name = "AD NA Equity" },
                     new SecurityInfo() { Name = "AMZN US Equity" },
                     new SecurityInfo() { Name = "GOOG US Equity" },
                     new SecurityInfo() { Name = "GOOGL US Equity" },
@@ -35,10 +35,7 @@ namespace PricingServices.Client.Console
                     new SecurityInfo() { Name = "MORGBZH LX Equity" },
                     new SecurityInfo() { Name = "TAGCI SW Equity" },
                     new SecurityInfo() { Name = "ED630505     Corp" },
-                    new SecurityInfo() { Name = "EP0492991 Pfd" },
-                    new SecurityInfo() { Name = "ECU9 COMB Curncy" },
-                    new SecurityInfo() { Name = "ECZ9 COMB Curncy" },
-                    new SecurityInfo() { Name = "1720692D Fp" }
+                    new SecurityInfo() { Name = "EP0492991 Pfd" }
                 }).
                 SetFieldsList(new List<string>
                 {
@@ -52,22 +49,22 @@ namespace PricingServices.Client.Console
                     "leiUltimateParentCompany"
                 }).
                 InitializeSession();
-            var data = await bloombergService.RequestDataAsync();
-            Dump(data);
-
-            //var outputFilePath = System.IO.Path.Combine("Tempfiles", $"myReq20201119115321.bbg");
-            //var data = Builder.GetPricingService().ProcessFile(outputFilePath);
-            //Dump(data);
+            var response = await bloombergService.RequestDataAsync();
+            Dump(response);
         }
 
-        private static void Dump(List<ISecurityValues> data)
+        private static void Dump(IServiceResponse data)
         {
-            foreach (var sec in data)
+            System.Console.WriteLine(
+                $"RESPONSE: {data.RequestId} ({data.RequestDateTime}) Elapsed = {data.ElapsedTime}");
+            foreach (var security in data.SecuritiesValues)
             {
-                System.Console.WriteLine($"SECURITY: {sec.SecurityName} - {sec.ErrorCode}");
-                foreach (var value in sec.FieldValues)
+                System.Console.WriteLine(
+                    $"  SECURITY: {security.SecurityName} - (ERROR = {security.ErrorCode})");
+                foreach (var value in security.FieldValues)
                 {
-                    System.Console.WriteLine($"    FIELD: {value.Name} = {value.Value}");
+                    System.Console.WriteLine(
+                        $"    FIELD: {value.Name} = {value.Value}");
                 }
             }
         }

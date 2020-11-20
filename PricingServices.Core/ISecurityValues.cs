@@ -2,6 +2,7 @@
 
 namespace PricingServices.Core
 {
+
     public interface ISecurityValues
     {
         string SecurityName { get; set; }

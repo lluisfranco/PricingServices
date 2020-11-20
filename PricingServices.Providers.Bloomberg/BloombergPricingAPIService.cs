@@ -2,6 +2,7 @@
 using PricingServices.Providers.Bloomberg.Model;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -22,14 +23,14 @@ namespace PricingServices.Providers.Bloomberg
         private readonly string FieldListId;
         private readonly string TriggerId;
         private readonly string RequestId;
-        private const string OutputPath = "TempFiles";
 
         public List<SecurityInfo> SecuritiesList { get; private set; }
         public List<string> FieldsList { get; private set; }
         public Credential Credential { get; private set; } = null;
+        public ServiceOptions Options { get; private set; }
+        public IServiceResponse ServiceResponse { get; set; }
 
-        readonly string RequestDelimiter = "|";
-
+        readonly Stopwatch clock = new Stopwatch();
         public BloombergPricingAPIService()
         {
             // Generate unique resource indentifiers.
@@ -38,6 +39,12 @@ namespace PricingServices.Providers.Bloomberg
             FieldListId = $"myFieldList{resourceIdPostfix}";
             TriggerId = $"myTrigger{resourceIdPostfix}";
             RequestId = $"myReq{resourceIdPostfix}";
+            Options = new ServiceOptions();
+            ServiceResponse = new ServiceResponse()
+            {
+                RequestId = resourceIdPostfix,
+                RequestDateTime = DateTime.Now
+            };
         }
 
         public IPricingAPIService SetCredentials(ServiceCredentials serviceCredential)
@@ -48,6 +55,12 @@ namespace PricingServices.Providers.Bloomberg
                 ClientSecret = serviceCredential.ClientSecret,
                 ExpirationDate = serviceCredential.ExpirationDate
             };
+            return this;
+        }
+
+        public IPricingAPIService SetOptions(ServiceOptions serviceOptions)
+        {
+            Options = serviceOptions;
             return this;
         }
 
@@ -139,7 +152,7 @@ namespace PricingServices.Providers.Bloomberg
             new Security()
             {
                 Type = "Identifier",
-                IdentifierType = "TICKER",
+                IdentifierType = security.IdentifierType.ToString(),
                 IdentifierValue = FixSecurityName(security)
             });
         }
@@ -151,23 +164,24 @@ namespace PricingServices.Providers.Bloomberg
         {
             if (security.Type == SecurityInfo.SecurityInfoTypeEnum.Currency)
             {
-                if (!security.Name.Contains("Curncy"))
-                {
-                    return $"{security.Name} Curncy";
-                }
-                else
-                {
-                    return security.Name;
-                }
+                return !security.Name.Contains("Curncy") ? $"{security.Name} Curncy" : security.Name;
             }
             if (security.Type == SecurityInfo.SecurityInfoTypeEnum.Asset)
             {
-                if (!security.Name.Contains("CORP")) return security.Name.Replace("CORP", "Corp");
-                if (!security.Name.Contains("GOVT")) return security.Name.Replace("CORP", "Corp");
-                if (!security.Name.Contains("EQUITY")) return security.Name.Replace("EQUITY", "Equity");
+                security.Name = FixSecurityNameCase(security.Name, "Corp");
+                security.Name = FixSecurityNameCase(security.Name, "Govt");
+                security.Name = FixSecurityNameCase(security.Name, "Equity");
                 return security.Name;
             }
             return security.Name;
+        }
+
+        private string FixSecurityNameCase(string securityName, string containsText)
+        {
+            if (securityName.Contains(containsText, StringComparison.CurrentCultureIgnoreCase))
+                return securityName.Replace(containsText, containsText, StringComparison.CurrentCultureIgnoreCase);
+            else
+                return securityName;
         }
 
         private async Task<string> CreateFieldList(string catalog)
@@ -245,7 +259,7 @@ namespace PricingServices.Providers.Bloomberg
                     Type = "DataFormat",
                     ColumnHeader = true,
                     DateFormat = "yyyymmdd",
-                    Delimiter = RequestDelimiter,
+                    Delimiter = Options.RequestFileDelimiter,
                     FileType = "unixFileType",
                     OutputFormat = "variableOutputFormat"
                 },
@@ -292,8 +306,9 @@ namespace PricingServices.Providers.Bloomberg
             Console.WriteLine();
         }
 
-        public async Task<List<ISecurityValues>> RequestDataAsync()
+        public async Task<IServiceResponse> RequestDataAsync()
         {
+            clock.Start();
             //  Create an SSE session to receive notification when reply is delivered
             using (var sseClient = new Sse.SseClient(MakeUri("/eap/notifications/sse"), BeapSession))
             {
@@ -361,31 +376,43 @@ namespace PricingServices.Providers.Bloomberg
                         continue;
                     }
                     // Prepare for storing reply file.
-                    Directory.CreateDirectory(OutputPath);
-                    var outputFilePath = Path.Combine(OutputPath, $"{deliveryDistributionId}.gz");
+                    Directory.CreateDirectory(Options.ResponseOutputFolderName);
+                    var zippedFilePath = Path.Combine(Options.ResponseOutputFolderName, $"{deliveryDistributionId}.gz");
                     // Download reply file from server.
-                    await DownloadDistribution(replyUrl, outputFilePath);
-                    Console.WriteLine($"Reply file was downloaded: {outputFilePath}");
-                    FileInfo outputFile = new FileInfo(outputFilePath);
-                    var responseFileName = UnzipFile(outputFile);
-                    Console.WriteLine($"File was unzipped: {responseFileName}");
-                    return ProcessFile(responseFileName);
+                    await DownloadDistribution(replyUrl, zippedFilePath);
+                    Console.WriteLine($"Reply file was downloaded: {zippedFilePath}");
+                    var unzippedFilePath = UnzipFile(zippedFilePath);
+                    Console.WriteLine($"File was unzipped: {unzippedFilePath}");
+                    var securitiesValues = ProcessFile(unzippedFilePath);
+                    // Clean files if nedded.
+                    if (Options.RemoveFilesAfterResponse == ServiceOptions.ResponseRemoveFilesEnum.RemoveAll ||
+                        Options.RemoveFilesAfterResponse == ServiceOptions.ResponseRemoveFilesEnum.RemoveZippedFile)
+                        File.Delete(zippedFilePath);
+                    if (Options.RemoveFilesAfterResponse == ServiceOptions.ResponseRemoveFilesEnum.RemoveAll ||
+                       Options.RemoveFilesAfterResponse == ServiceOptions.ResponseRemoveFilesEnum.RemoveUnzippedFile)
+                        File.Delete(unzippedFilePath);
+                    clock.Stop();
+                    ServiceResponse.ElapsedTime = clock.Elapsed;
+                    ServiceResponse.ResponseZippedFilePath = zippedFilePath;
+                    ServiceResponse.ResponseUnzippedFilePath = unzippedFilePath;
+                    ServiceResponse.SecuritiesValues = securitiesValues;
+                    return ServiceResponse;
                 }
             }
             Console.WriteLine("Reply NOT delivered, try to increase waiter loop timeout");
             return null;
         }
 
-        public static string UnzipFile(FileInfo fileToDecompress)
+        public static string UnzipFile(string zippedFilePath)
         {
-            using FileStream originalFileStream = fileToDecompress.OpenRead();
-            string currentFileName = fileToDecompress.FullName;
-            string newFileName = currentFileName.Remove(currentFileName.Length - fileToDecompress.Extension.Length);
+            var fileToUnzip = new FileInfo(zippedFilePath);
+            using FileStream originalFileStream = fileToUnzip.OpenRead();
+            string currentFileName = fileToUnzip.FullName;
+            string newFileName = currentFileName.Remove(currentFileName.Length - fileToUnzip.Extension.Length);
             using (FileStream decompressedFileStream = File.Create(newFileName))
             {
                 using GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress);
                 decompressionStream.CopyTo(decompressedFileStream);
-                Console.WriteLine($"Decompressed: {fileToDecompress.Name}");
             }
             return newFileName;
         }
@@ -402,18 +429,14 @@ namespace PricingServices.Providers.Bloomberg
                 if (line == "START-OF-DATA") startReadingData = true;
                 if (line == "END-OF-DATA") startReadingData = false;
                 if (startReadingData)
-                {
-                    
+                {                    
                     var securityValues = new SecurityValues() { RawValue = line };
                     lineNumber++;
                     if (lineNumber == 1) continue;
-                    if (lineNumber == 2)
-                    {
-                        columnNames = line.Split(RequestDelimiter).ToList();
-                    }
+                    if (lineNumber == 2) columnNames = line.Split(Options.RequestFileDelimiter).ToList();
                     if (lineNumber > 2)
                     {
-                        var columnValues = line.Split(RequestDelimiter).ToList();
+                        var columnValues = line.Split(Options.RequestFileDelimiter).ToList();
                         securityValues.SecurityName = columnValues[0];
                         securityValues.ErrorCode = columnValues[1];
                         if (securityValues.ErrorCode == "0")
