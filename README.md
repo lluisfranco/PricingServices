@@ -68,7 +68,7 @@ Response includes some metadata (id, time, elapsed time) and the list of securit
     "RequestDateTime": "2020-11-20T12:34:47.4988258+01:00",
     "ElapsedTime": "00:00:32.2943616",
     "ResponseZippedFilePath": "TempFiles\\myReq20201120113447.bbg.gz",
-    "ResponseUnzippedFilePath": "C:\\Users\\lfranco\\source\\repos\\PricingServices\\PricingServices.Client.Console\\bin\\Debug\\net5.0\\TempFiles\\myReq20201120113447.bbg",
+    "ResponseUnzippedFilePath": "----\\bin\\Debug\\net5.0\\TempFiles\\myReq20201120113447.bbg",
     "SecuritiesValues": {
         "$type": "System.Collections.Generic.List<PricingServices.Core.ISecurityValues>",
         "$values": [
