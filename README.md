@@ -10,7 +10,7 @@ In a short future I'd like to implement other financial providers like Refinitiv
 You can also create your own provider for other pricing services implementing interface IPricingAPIService
 
 ## Important Note 
-A BEAP (Bloomberg Enterprise Access Point) license is required in order to obtain a valid credentials to connect.
+A BEAP (Bloomberg Enterprise Access Point) license is required in order to obtain a valid set of credentials to connect.
 You can request a test license contacting [Enterprise Access Point portal](https://www.bloomberg.com/professional/product/enterprise-access-point/)
 
 ## Samples
