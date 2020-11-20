@@ -16,7 +16,7 @@ You can request a test license contacting [Enterprise Access Point portal](https
 ## Samples
 Connect to the service using your BEAP credentials, requesting some secuirities and some extra fields.
 
-{{< highlight csharp "linenos=table" >}}
+``` csharp
 static async Task Main()
 {
     var bloombergService = Builder.GetPricingService().
@@ -52,4 +52,4 @@ static async Task Main()
     var response = await bloombergService.RequestDataAsync();
     Dump(response);
 }
-{{< / highlight >}}
+```
