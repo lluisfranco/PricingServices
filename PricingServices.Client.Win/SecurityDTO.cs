@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PricingServices.Client.Win
+﻿namespace PricingServices.Client.Win
 {
     public class SecurityDTO
     {
         public int AssetId { get; set; }
         public string AssetCode { get; set; }
         public string AssetName { get; set; }
+        public string ISIN { get; set; }
         public string Ticker { get; set; }
         public int AssetTypeId { get; set; }
         public string AssetTypeName { get; set; }
         public bool IsActive { get; set; }
-
+        public string ProviderInternalName { get; set; }
+        public string ErrorCode { get; set; }
         public string pxLast { get; set; }
         public string name { get; set; }
         public string crncy { get; set; }

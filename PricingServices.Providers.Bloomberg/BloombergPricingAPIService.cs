@@ -152,15 +152,15 @@ namespace PricingServices.Providers.Bloomberg
         {
             foreach (var security in SecuritiesList)
             {
-                security.ProviderInternalName = security.Name;
-                security.Name = FixSecurityName(security);
+                security.ProviderInternalName = FixSecurityName(security);
+                //security.Name = security.Name; //FixSecurityName(security);
             }
             return SecuritiesList.Select(security =>
             new Security()
             {
                 Type = "Identifier",
                 IdentifierType = security.IdentifierType.ToString(),
-                IdentifierValue = security.Name 
+                IdentifierValue = security.ProviderInternalName
             });
         }
 
@@ -169,20 +169,22 @@ namespace PricingServices.Providers.Bloomberg
         //In currencies must be added Curncy sufix 
         private string FixSecurityName(SecurityInfo security)
         {
+            var name = security.Name;
+            //var res = string.Empty;
             if (security.Type == SecurityInfo.SecurityInfoTypeEnum.Currency)
             {
-                return !security.ProviderInternalName.Contains("Curncy") ? 
-                    $"{security.ProviderInternalName} Curncy" : 
-                    security.Name;
+                return !name.Contains("Curncy") ? 
+                    $"{name} Curncy" :
+                    name;
             }
             if (security.Type == SecurityInfo.SecurityInfoTypeEnum.Asset)
             {
-                security.Name = FixSecurityNameCase(security.ProviderInternalName, "Corp");
-                security.Name = FixSecurityNameCase(security.ProviderInternalName, "Govt");
-                security.Name = FixSecurityNameCase(security.ProviderInternalName, "Equity");
-                return security.Name;
+                name = FixSecurityNameCase(name, "Corp");
+                name = FixSecurityNameCase(name, "Govt");
+                name = FixSecurityNameCase(name, "Equity");
+                return name;
             }
-            return security.Name;
+            return name;
         }
 
         private string FixSecurityNameCase(string securityName, string containsText)
@@ -436,10 +438,10 @@ namespace PricingServices.Providers.Bloomberg
             return unzippedFileName;
         }
 
-        private string GetOriginalName(string securityName)
+        private string GetSecurityName(string providerInternalName)
         {
             return SecuritiesList.FirstOrDefault(
-                p => p.Name == securityName)?.ProviderInternalName;
+                p => p.Name == providerInternalName)?.Name;
         }
 
         public List<ISecurityValues> ProcessFile(string responseFileName)
@@ -463,8 +465,10 @@ namespace PricingServices.Providers.Bloomberg
                     if (lineNumber > 2)
                     {
                         var columnValues = line.Split(Options.RequestFileDelimiter.ToCharArray()).ToList();
-                        securityValues.SecurityName = columnValues[0];
-                        securityValues.OriginalSecurityName = GetOriginalName(securityValues.SecurityName);
+                        var securityName = columnValues[0];
+                        securityValues.ProviderInternalSecurityName = securityName;
+                        securityValues.SecurityName = SecuritiesList.FirstOrDefault(
+                            p => p.ProviderInternalName == securityName)?.Name;
                         securityValues.ErrorCode = columnValues[1];
                         if (securityValues.ErrorCode == "0")
                         {

@@ -27,6 +27,7 @@ namespace PricingServices.Client.Win
                               Q.AssetId,
                               q.AssetCode,
                               Q.AssetName,
+                              Q.ISIN,
                               Q.Ticker,
                               Q.AssetTypeId,
                               Q.AssetTypeName,

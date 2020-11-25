@@ -35,6 +35,8 @@ namespace PricingServices.Client.Win
             this.barButtonItem1 = new DevExpress.XtraBars.BarButtonItem();
             this.barButtonItem2 = new DevExpress.XtraBars.BarButtonItem();
             this.barButtonItem3 = new DevExpress.XtraBars.BarButtonItem();
+            this.barButtonItem4 = new DevExpress.XtraBars.BarButtonItem();
+            this.barButtonItem5 = new DevExpress.XtraBars.BarButtonItem();
             this.ribbonPage1 = new DevExpress.XtraBars.Ribbon.RibbonPage();
             this.ribbonPageGroup1 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.gridControl1 = new DevExpress.XtraGrid.GridControl();
@@ -55,8 +57,9 @@ namespace PricingServices.Client.Win
             this.colmifidIiComplexInstrIndicator = new DevExpress.XtraGrid.Columns.GridColumn();
             this.collegalEntityIdentifier = new DevExpress.XtraGrid.Columns.GridColumn();
             this.colleiUltimateParentCompany = new DevExpress.XtraGrid.Columns.GridColumn();
-            this.barButtonItem4 = new DevExpress.XtraBars.BarButtonItem();
-            this.barButtonItem5 = new DevExpress.XtraBars.BarButtonItem();
+            this.colProviderInternalName = new DevExpress.XtraGrid.Columns.GridColumn();
+            this.colErrorCode = new DevExpress.XtraGrid.Columns.GridColumn();
+            this.colISIN = new DevExpress.XtraGrid.Columns.GridColumn();
             ((System.ComponentModel.ISupportInitialize)(this.ribbon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.securityDTOBindingSource)).BeginInit();
@@ -104,6 +107,22 @@ namespace PricingServices.Client.Win
             this.barButtonItem3.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("barButtonItem3.ImageOptions.SvgImage")));
             this.barButtonItem3.Name = "barButtonItem3";
             this.barButtonItem3.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem3_ItemClick);
+            // 
+            // barButtonItem4
+            // 
+            this.barButtonItem4.Caption = "Select All";
+            this.barButtonItem4.Id = 4;
+            this.barButtonItem4.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("barButtonItem4.ImageOptions.SvgImage")));
+            this.barButtonItem4.Name = "barButtonItem4";
+            this.barButtonItem4.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem4_ItemClick);
+            // 
+            // barButtonItem5
+            // 
+            this.barButtonItem5.Caption = "Select none";
+            this.barButtonItem5.Id = 5;
+            this.barButtonItem5.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("barButtonItem5.ImageOptions.SvgImage")));
+            this.barButtonItem5.Name = "barButtonItem5";
+            this.barButtonItem5.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem5_ItemClick);
             // 
             // ribbonPage1
             // 
@@ -156,10 +175,12 @@ namespace PricingServices.Client.Win
             this.colindustrySector,
             this.colmifidIiComplexInstrIndicator,
             this.collegalEntityIdentifier,
-            this.colleiUltimateParentCompany});
+            this.colleiUltimateParentCompany,
+            this.colProviderInternalName,
+            this.colErrorCode,
+            this.colISIN});
             this.gridView1.GridControl = this.gridControl1;
             this.gridView1.Name = "gridView1";
-            this.gridView1.OptionsBehavior.Editable = false;
             this.gridView1.OptionsSelection.CheckBoxSelectorColumnWidth = 40;
             this.gridView1.OptionsSelection.MultiSelect = true;
             this.gridView1.OptionsSelection.MultiSelectMode = DevExpress.XtraGrid.Views.Grid.GridMultiSelectMode.CheckBoxRowSelect;
@@ -170,8 +191,6 @@ namespace PricingServices.Client.Win
             this.colAssetId.AppearanceHeader.Options.UseBackColor = true;
             this.colAssetId.FieldName = "AssetId";
             this.colAssetId.Name = "colAssetId";
-            this.colAssetId.Visible = true;
-            this.colAssetId.VisibleIndex = 1;
             // 
             // colAssetCode
             // 
@@ -180,7 +199,7 @@ namespace PricingServices.Client.Win
             this.colAssetCode.FieldName = "AssetCode";
             this.colAssetCode.Name = "colAssetCode";
             this.colAssetCode.Visible = true;
-            this.colAssetCode.VisibleIndex = 2;
+            this.colAssetCode.VisibleIndex = 3;
             // 
             // colAssetName
             // 
@@ -189,7 +208,7 @@ namespace PricingServices.Client.Win
             this.colAssetName.FieldName = "AssetName";
             this.colAssetName.Name = "colAssetName";
             this.colAssetName.Visible = true;
-            this.colAssetName.VisibleIndex = 3;
+            this.colAssetName.VisibleIndex = 4;
             // 
             // colTicker
             // 
@@ -198,7 +217,7 @@ namespace PricingServices.Client.Win
             this.colTicker.FieldName = "Ticker";
             this.colTicker.Name = "colTicker";
             this.colTicker.Visible = true;
-            this.colTicker.VisibleIndex = 4;
+            this.colTicker.VisibleIndex = 6;
             // 
             // colAssetTypeId
             // 
@@ -206,8 +225,6 @@ namespace PricingServices.Client.Win
             this.colAssetTypeId.AppearanceHeader.Options.UseBackColor = true;
             this.colAssetTypeId.FieldName = "AssetTypeId";
             this.colAssetTypeId.Name = "colAssetTypeId";
-            this.colAssetTypeId.Visible = true;
-            this.colAssetTypeId.VisibleIndex = 5;
             // 
             // colAssetTypeName
             // 
@@ -216,7 +233,7 @@ namespace PricingServices.Client.Win
             this.colAssetTypeName.FieldName = "AssetTypeName";
             this.colAssetTypeName.Name = "colAssetTypeName";
             this.colAssetTypeName.Visible = true;
-            this.colAssetTypeName.VisibleIndex = 6;
+            this.colAssetTypeName.VisibleIndex = 1;
             // 
             // colIsActive
             // 
@@ -225,79 +242,90 @@ namespace PricingServices.Client.Win
             this.colIsActive.FieldName = "IsActive";
             this.colIsActive.Name = "colIsActive";
             this.colIsActive.Visible = true;
-            this.colIsActive.VisibleIndex = 7;
+            this.colIsActive.VisibleIndex = 2;
             // 
             // colpxLast
             // 
             this.colpxLast.FieldName = "pxLast";
             this.colpxLast.Name = "colpxLast";
             this.colpxLast.Visible = true;
-            this.colpxLast.VisibleIndex = 8;
+            this.colpxLast.VisibleIndex = 9;
             // 
             // colname
             // 
             this.colname.FieldName = "name";
             this.colname.Name = "colname";
             this.colname.Visible = true;
-            this.colname.VisibleIndex = 9;
+            this.colname.VisibleIndex = 10;
             // 
             // colcrncy
             // 
             this.colcrncy.FieldName = "crncy";
             this.colcrncy.Name = "colcrncy";
             this.colcrncy.Visible = true;
-            this.colcrncy.VisibleIndex = 10;
+            this.colcrncy.VisibleIndex = 11;
             // 
             // colcntryOfIncorporation
             // 
             this.colcntryOfIncorporation.FieldName = "cntryOfIncorporation";
             this.colcntryOfIncorporation.Name = "colcntryOfIncorporation";
             this.colcntryOfIncorporation.Visible = true;
-            this.colcntryOfIncorporation.VisibleIndex = 11;
+            this.colcntryOfIncorporation.VisibleIndex = 12;
             // 
             // colindustrySector
             // 
             this.colindustrySector.FieldName = "industrySector";
             this.colindustrySector.Name = "colindustrySector";
             this.colindustrySector.Visible = true;
-            this.colindustrySector.VisibleIndex = 12;
+            this.colindustrySector.VisibleIndex = 13;
             // 
             // colmifidIiComplexInstrIndicator
             // 
             this.colmifidIiComplexInstrIndicator.FieldName = "mifidIiComplexInstrIndicator";
             this.colmifidIiComplexInstrIndicator.Name = "colmifidIiComplexInstrIndicator";
             this.colmifidIiComplexInstrIndicator.Visible = true;
-            this.colmifidIiComplexInstrIndicator.VisibleIndex = 13;
+            this.colmifidIiComplexInstrIndicator.VisibleIndex = 14;
             // 
             // collegalEntityIdentifier
             // 
             this.collegalEntityIdentifier.FieldName = "legalEntityIdentifier";
             this.collegalEntityIdentifier.Name = "collegalEntityIdentifier";
             this.collegalEntityIdentifier.Visible = true;
-            this.collegalEntityIdentifier.VisibleIndex = 14;
+            this.collegalEntityIdentifier.VisibleIndex = 15;
             // 
             // colleiUltimateParentCompany
             // 
             this.colleiUltimateParentCompany.FieldName = "leiUltimateParentCompany";
             this.colleiUltimateParentCompany.Name = "colleiUltimateParentCompany";
             this.colleiUltimateParentCompany.Visible = true;
-            this.colleiUltimateParentCompany.VisibleIndex = 15;
+            this.colleiUltimateParentCompany.VisibleIndex = 16;
             // 
-            // barButtonItem4
+            // colProviderInternalName
             // 
-            this.barButtonItem4.Caption = "Select All";
-            this.barButtonItem4.Id = 4;
-            this.barButtonItem4.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("barButtonItem4.ImageOptions.SvgImage")));
-            this.barButtonItem4.Name = "barButtonItem4";
-            this.barButtonItem4.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem4_ItemClick);
+            this.colProviderInternalName.AppearanceHeader.BackColor = DevExpress.LookAndFeel.DXSkinColors.FillColors.Success;
+            this.colProviderInternalName.AppearanceHeader.Options.UseBackColor = true;
+            this.colProviderInternalName.FieldName = "ProviderInternalName";
+            this.colProviderInternalName.Name = "colProviderInternalName";
+            this.colProviderInternalName.Visible = true;
+            this.colProviderInternalName.VisibleIndex = 7;
             // 
-            // barButtonItem5
+            // colErrorCode
             // 
-            this.barButtonItem5.Caption = "Select none";
-            this.barButtonItem5.Id = 5;
-            this.barButtonItem5.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("barButtonItem5.ImageOptions.SvgImage")));
-            this.barButtonItem5.Name = "barButtonItem5";
-            this.barButtonItem5.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem5_ItemClick);
+            this.colErrorCode.AppearanceHeader.BackColor = DevExpress.LookAndFeel.DXSkinColors.FillColors.Success;
+            this.colErrorCode.AppearanceHeader.Options.UseBackColor = true;
+            this.colErrorCode.FieldName = "ErrorCode";
+            this.colErrorCode.Name = "colErrorCode";
+            this.colErrorCode.Visible = true;
+            this.colErrorCode.VisibleIndex = 8;
+            // 
+            // colISIN
+            // 
+            this.colISIN.AppearanceHeader.BackColor = DevExpress.LookAndFeel.DXSkinColors.FillColors.Question;
+            this.colISIN.AppearanceHeader.Options.UseBackColor = true;
+            this.colISIN.FieldName = "ISIN";
+            this.colISIN.Name = "colISIN";
+            this.colISIN.Visible = true;
+            this.colISIN.VisibleIndex = 5;
             // 
             // RibbonForm1
             // 
@@ -309,6 +337,7 @@ namespace PricingServices.Client.Win
             this.Name = "RibbonForm1";
             this.Ribbon = this.ribbon;
             this.Text = "RibbonForm1";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             ((System.ComponentModel.ISupportInitialize)(this.ribbon)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.securityDTOBindingSource)).EndInit();
@@ -346,5 +375,8 @@ namespace PricingServices.Client.Win
         private DevExpress.XtraBars.BarButtonItem barButtonItem3;
         private DevExpress.XtraBars.BarButtonItem barButtonItem4;
         private DevExpress.XtraBars.BarButtonItem barButtonItem5;
+        private DevExpress.XtraGrid.Columns.GridColumn colProviderInternalName;
+        private DevExpress.XtraGrid.Columns.GridColumn colErrorCode;
+        private DevExpress.XtraGrid.Columns.GridColumn colISIN;
     }
 }

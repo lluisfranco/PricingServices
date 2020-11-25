@@ -56,17 +56,22 @@ namespace PricingServices.Client.Win
             foreach (var sv in response.SecuritiesValues)
             {
                 var security = Securities.FirstOrDefault(
-                    p => p.Ticker == sv.OriginalSecurityName);
-                if (security != null && sv.ErrorCode == "0" && sv.FieldValues.Count > 0)
+                    p => p.Ticker == sv.SecurityName);
+                if(security != null)
                 {
-                    security.pxLast = sv.FieldValues[0].Value;
-                    security.name = sv.FieldValues[1].Value;
-                    security.crncy = sv.FieldValues[2].Value;
-                    security.cntryOfIncorporation = sv.FieldValues[3].Value;
-                    security.industrySector = sv.FieldValues[4].Value;
-                    security.mifidIiComplexInstrIndicator = sv.FieldValues[5].Value;
-                    security.legalEntityIdentifier = sv.FieldValues[6].Value;
-                    security.leiUltimateParentCompany = sv.FieldValues[7].Value;
+                    security.ProviderInternalName = sv.ProviderInternalSecurityName;
+                    security.ErrorCode = sv.ErrorCode;
+                    if (sv.ErrorCode == "0" && sv.FieldValues.Count > 0)
+                    {
+                        security.pxLast = sv.FieldValues[0].Value;
+                        security.name = sv.FieldValues[1].Value;
+                        security.crncy = sv.FieldValues[2].Value;
+                        security.cntryOfIncorporation = sv.FieldValues[3].Value;
+                        security.industrySector = sv.FieldValues[4].Value;
+                        security.mifidIiComplexInstrIndicator = sv.FieldValues[5].Value;
+                        security.legalEntityIdentifier = sv.FieldValues[6].Value;
+                        security.leiUltimateParentCompany = sv.FieldValues[7].Value;
+                    }
                 }
             }
             gridView1.RefreshData();
