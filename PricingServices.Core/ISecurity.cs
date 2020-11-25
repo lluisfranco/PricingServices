@@ -7,5 +7,6 @@
         string IdentifierType { get; set; }
 
         string IdentifierValue { get; set; }
+        //string OriginalIdentifierValue { get; set; }
     }
 }

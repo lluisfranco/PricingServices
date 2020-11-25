@@ -13,6 +13,9 @@ namespace PricingServices.Providers.Bloomberg.Model
 
         [JsonPropertyNameAttribute("identifierValue")]
         public string IdentifierValue { get; set; }
+
+        //[JsonPropertyNameAttribute("originalidentifierValue")]
+        //public string OriginalIdentifierValue { get; set; }
     }
 
 }

@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PricingServices.Providers.Bloomberg
@@ -29,6 +30,7 @@ namespace PricingServices.Providers.Bloomberg
         public Credential Credential { get; private set; } = null;
         public ServiceOptions Options { get; private set; }
         public IServiceResponse ServiceResponse { get; set; }
+        public List<Security> CurrentSecuritiesList { get; set; }
 
         readonly Stopwatch clock = new Stopwatch();
         public BloombergPricingAPIService()
@@ -131,29 +133,34 @@ namespace PricingServices.Providers.Bloomberg
 
             return scheduledCatalog.Identifier;
         }
-
         private async Task<string> CreateUniverse(string catalog)
         {
             var uri = MakeUri($"/eap/catalogs/{catalog}/universes/");
+            var CurrentSecuritiesList = GetSecuritiesList().ToList();
             var payload = new Universe
             {
                 Type = "Universe",
                 Identifier = UniverseId,
                 Title = "My Universe",
                 Description = "Some description",
-                Contains = GetSecuritiesList().ToArray()
+                Contains = CurrentSecuritiesList.ToArray()
             };
             return await HttpPost(uri, payload);
         }
 
         private IEnumerable<Security> GetSecuritiesList()
         {
+            foreach (var security in SecuritiesList)
+            {
+                security.ProviderInternalName = security.Name;
+                security.Name = FixSecurityName(security);
+            }
             return SecuritiesList.Select(security =>
             new Security()
             {
                 Type = "Identifier",
                 IdentifierType = security.IdentifierType.ToString(),
-                IdentifierValue = FixSecurityName(security)
+                IdentifierValue = security.Name 
             });
         }
 
@@ -164,13 +171,15 @@ namespace PricingServices.Providers.Bloomberg
         {
             if (security.Type == SecurityInfo.SecurityInfoTypeEnum.Currency)
             {
-                return !security.Name.Contains("Curncy") ? $"{security.Name} Curncy" : security.Name;
+                return !security.ProviderInternalName.Contains("Curncy") ? 
+                    $"{security.ProviderInternalName} Curncy" : 
+                    security.Name;
             }
             if (security.Type == SecurityInfo.SecurityInfoTypeEnum.Asset)
             {
-                security.Name = FixSecurityNameCase(security.Name, "Corp");
-                security.Name = FixSecurityNameCase(security.Name, "Govt");
-                security.Name = FixSecurityNameCase(security.Name, "Equity");
+                security.Name = FixSecurityNameCase(security.ProviderInternalName, "Corp");
+                security.Name = FixSecurityNameCase(security.ProviderInternalName, "Govt");
+                security.Name = FixSecurityNameCase(security.ProviderInternalName, "Equity");
                 return security.Name;
             }
             return security.Name;
@@ -178,8 +187,13 @@ namespace PricingServices.Providers.Bloomberg
 
         private string FixSecurityNameCase(string securityName, string containsText)
         {
-            if (securityName.Contains(containsText, StringComparison.CurrentCultureIgnoreCase))
-                return securityName.Replace(containsText, containsText, StringComparison.CurrentCultureIgnoreCase);
+            var contains = securityName.IndexOf(
+                containsText, StringComparison.CurrentCultureIgnoreCase) > 0;
+            if (contains)
+            {
+                var regex = new Regex(containsText, RegexOptions.IgnoreCase);
+                return regex.Replace(securityName, containsText);
+            }
             else
                 return securityName;
         }
@@ -405,16 +419,27 @@ namespace PricingServices.Providers.Bloomberg
 
         public static string UnzipFile(string zippedFilePath)
         {
+            var unzippedFileName = string.Empty;
             var fileToUnzip = new FileInfo(zippedFilePath);
-            using FileStream originalFileStream = fileToUnzip.OpenRead();
-            string currentFileName = fileToUnzip.FullName;
-            string newFileName = currentFileName.Remove(currentFileName.Length - fileToUnzip.Extension.Length);
-            using (FileStream decompressedFileStream = File.Create(newFileName))
+            using (FileStream originalFileStream = fileToUnzip.OpenRead())
             {
-                using GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress);
-                decompressionStream.CopyTo(decompressedFileStream);
+                string currentFileName = fileToUnzip.FullName;
+                unzippedFileName = currentFileName.Remove(currentFileName.Length - fileToUnzip.Extension.Length);
+                using (FileStream decompressedFileStream = File.Create(unzippedFileName))
+                {
+                    using (GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress))
+                    {
+                        decompressionStream.CopyTo(decompressedFileStream);
+                    }
+                }
             }
-            return newFileName;
+            return unzippedFileName;
+        }
+
+        private string GetOriginalName(string securityName)
+        {
+            return SecuritiesList.FirstOrDefault(
+                p => p.Name == securityName)?.ProviderInternalName;
         }
 
         public List<ISecurityValues> ProcessFile(string responseFileName)
@@ -433,11 +458,13 @@ namespace PricingServices.Providers.Bloomberg
                     var securityValues = new SecurityValues() { RawValue = line };
                     lineNumber++;
                     if (lineNumber == 1) continue;
-                    if (lineNumber == 2) columnNames = line.Split(Options.RequestFileDelimiter).ToList();
+                    if (lineNumber == 2) columnNames = line.Split(
+                        Options.RequestFileDelimiter.ToCharArray()).ToList();
                     if (lineNumber > 2)
                     {
-                        var columnValues = line.Split(Options.RequestFileDelimiter).ToList();
+                        var columnValues = line.Split(Options.RequestFileDelimiter.ToCharArray()).ToList();
                         securityValues.SecurityName = columnValues[0];
+                        securityValues.OriginalSecurityName = GetOriginalName(securityValues.SecurityName);
                         securityValues.ErrorCode = columnValues[1];
                         if (securityValues.ErrorCode == "0")
                         {

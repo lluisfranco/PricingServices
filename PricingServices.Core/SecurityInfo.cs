@@ -3,6 +3,7 @@
     public class SecurityInfo
     {
         public string Name { get; set; }
+        public string ProviderInternalName { get; set; }
         public SecurityIdentifierTypeEnum IdentifierType { get; set; }
         public SecurityInfoTypeEnum Type { get; set; }
         public enum SecurityInfoTypeEnum
