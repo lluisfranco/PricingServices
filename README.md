@@ -10,7 +10,7 @@ In a short future I'd like to implement other financial providers like Refinitiv
 You can also create your own provider for other pricing services implementing interface IPricingAPIService
 
 ## Important Note 
-A BEAP (Bloomberg Enterprise Access Point) license is required in order to obtain a valid credentials to connect.
+A BEAP (Bloomberg Enterprise Access Point) license is required in order to obtain a valid set of credentials to connect.
 You can request a test license contacting [Enterprise Access Point portal](https://www.bloomberg.com/professional/product/enterprise-access-point/)
 
 ## Samples
@@ -68,7 +68,7 @@ Response includes some metadata (id, time, elapsed time) and the list of securit
     "RequestDateTime": "2020-11-20T12:34:47.4988258+01:00",
     "ElapsedTime": "00:00:32.2943616",
     "ResponseZippedFilePath": "TempFiles\\myReq20201120113447.bbg.gz",
-    "ResponseUnzippedFilePath": "C:\\Users\\lfranco\\source\\repos\\PricingServices\\PricingServices.Client.Console\\bin\\Debug\\net5.0\\TempFiles\\myReq20201120113447.bbg",
+    "ResponseUnzippedFilePath": "----\\bin\\Debug\\net5.0\\TempFiles\\myReq20201120113447.bbg",
     "SecuritiesValues": {
         "$type": "System.Collections.Generic.List<PricingServices.Core.ISecurityValues>",
         "$values": [
