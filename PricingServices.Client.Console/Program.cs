@@ -17,13 +17,13 @@ namespace PricingServices.Client.Console
                     ClientSecret = "a1cd3e8a0453cee37635f60f16d2a95a3fe1c807b0dcaf07bdc2ee057638c621"
                 }).
                 SetSecuritiesList(new List<SecurityInfo> {
+                    new SecurityInfo() { Name = "EUR", Type = SecurityInfoTypeEnum.Currency },
+                    new SecurityInfo() { Name = "USD" , Type = SecurityInfoTypeEnum.Currency},
+                    new SecurityInfo() { Name = "GBP" , Type = SecurityInfoTypeEnum.Currency},
                     new SecurityInfo() { Name = "AAPL US Equity" },
                     new SecurityInfo() { Name = "AS5533318 Corp" },
                     new SecurityInfo() { Name = "EI5630724 Govt" },
                     new SecurityInfo() { Name = "CAC Index" },
-                    new SecurityInfo() { Name = "EUR", Type = SecurityInfoTypeEnum.Currency },
-                    new SecurityInfo() { Name = "USD" , Type = SecurityInfoTypeEnum.Currency},
-                    new SecurityInfo() { Name = "GBP" , Type = SecurityInfoTypeEnum.Currency},
                     new SecurityInfo() { Name = "AMZN US Equity" },
                     new SecurityInfo() { Name = "GOOG US Equity" },
                     new SecurityInfo() { Name = "GOOGL US Equity" },
