@@ -60,6 +60,7 @@ namespace PricingServices.Client.Win
             this.colProviderInternalName = new DevExpress.XtraGrid.Columns.GridColumn();
             this.colErrorCode = new DevExpress.XtraGrid.Columns.GridColumn();
             this.colISIN = new DevExpress.XtraGrid.Columns.GridColumn();
+            this.barButtonItem6 = new DevExpress.XtraBars.BarButtonItem();
             ((System.ComponentModel.ISupportInitialize)(this.ribbon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.securityDTOBindingSource)).BeginInit();
@@ -76,9 +77,10 @@ namespace PricingServices.Client.Win
             this.barButtonItem2,
             this.barButtonItem3,
             this.barButtonItem4,
-            this.barButtonItem5});
+            this.barButtonItem5,
+            this.barButtonItem6});
             this.ribbon.Location = new System.Drawing.Point(0, 0);
-            this.ribbon.MaxItemId = 6;
+            this.ribbon.MaxItemId = 7;
             this.ribbon.Name = "ribbon";
             this.ribbon.Pages.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPage[] {
             this.ribbonPage1});
@@ -134,6 +136,7 @@ namespace PricingServices.Client.Win
             // ribbonPageGroup1
             // 
             this.ribbonPageGroup1.ItemLinks.Add(this.barButtonItem1);
+            this.ribbonPageGroup1.ItemLinks.Add(this.barButtonItem6);
             this.ribbonPageGroup1.ItemLinks.Add(this.barButtonItem2);
             this.ribbonPageGroup1.ItemLinks.Add(this.barButtonItem3);
             this.ribbonPageGroup1.ItemLinks.Add(this.barButtonItem4, true);
@@ -327,6 +330,14 @@ namespace PricingServices.Client.Win
             this.colISIN.Visible = true;
             this.colISIN.VisibleIndex = 5;
             // 
+            // barButtonItem6
+            // 
+            this.barButtonItem6.Caption = "Process file...";
+            this.barButtonItem6.Id = 6;
+            this.barButtonItem6.ImageOptions.SvgImage = ((DevExpress.Utils.Svg.SvgImage)(resources.GetObject("barButtonItem6.ImageOptions.SvgImage")));
+            this.barButtonItem6.Name = "barButtonItem6";
+            this.barButtonItem6.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem6_ItemClick);
+            // 
             // RibbonForm1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -378,5 +389,6 @@ namespace PricingServices.Client.Win
         private DevExpress.XtraGrid.Columns.GridColumn colProviderInternalName;
         private DevExpress.XtraGrid.Columns.GridColumn colErrorCode;
         private DevExpress.XtraGrid.Columns.GridColumn colISIN;
+        private DevExpress.XtraBars.BarButtonItem barButtonItem6;
     }
 }

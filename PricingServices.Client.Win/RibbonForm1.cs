@@ -10,6 +10,7 @@ namespace PricingServices.Client.Win
 {
     public partial class RibbonForm1 : DevExpress.XtraBars.Ribbon.RibbonForm
     {
+        public IPricingAPIService BloombergService { get; private set; }
         public RibbonForm1()
         {
             InitializeComponent();
@@ -31,7 +32,7 @@ namespace PricingServices.Client.Win
             var securities = GetSelectedSecurities();
             if (securities.Count == 0) return;
             Application.UseWaitCursor = true;
-            var bloombergService = Builder.GetPricingService().
+            BloombergService = Builder.GetPricingService().
             SetCredentials(new ServiceCredentials()
             {
                 ClientId = "1e6e5c12b273505793bff2f9df21107f",
@@ -52,12 +53,18 @@ namespace PricingServices.Client.Win
                 "leiUltimateParentCompany"
             }).
             InitializeSession();
-            var response = await bloombergService.RequestDataAsync();
-            foreach (var sv in response.SecuritiesValues)
+            var response = await BloombergService.RequestDataAsync();
+            ShowSecuritiesInGrid(response.SecuritiesValues);
+            Application.UseWaitCursor = false;
+        }
+
+        private void ShowSecuritiesInGrid(List<ISecurityValues> securitiesValues)
+        {
+            foreach (var sv in securitiesValues)
             {
                 var security = Securities.FirstOrDefault(
                     p => p.Ticker == sv.SecurityName);
-                if(security != null)
+                if (security != null)
                 {
                     security.ProviderInternalName = sv.ProviderInternalSecurityName;
                     security.ErrorCode = sv.ErrorCode;
@@ -75,7 +82,6 @@ namespace PricingServices.Client.Win
                 }
             }
             gridView1.RefreshData();
-            Application.UseWaitCursor = false;
         }
 
         private List<SecurityInfo> GetSelectedSecurities()
@@ -107,6 +113,39 @@ namespace PricingServices.Client.Win
         private void barButtonItem5_ItemClick(object sender, ItemClickEventArgs e)
         {
             gridView1.ClearSelection();
+        }
+
+        private void barButtonItem6_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            gridView1.SelectAll();
+            var securities = GetSelectedSecurities();
+            BloombergService = Builder.GetPricingService().
+            SetCredentials(new ServiceCredentials()
+            {
+                ClientId = "1e6e5c12b273505793bff2f9df21107f",
+                ClientSecret = "a1cd3e8a0453cee37635f60f16d2a95a3fe1c807b0dcaf07bdc2ee057638c621"
+            }).
+            SetSecuritiesList(
+                securities
+            ).
+            SetFieldsList(new List<string>
+            {
+                "pxLast",
+                "name",
+                "crncy",
+                "cntryOfIncorporation",
+                "industrySector",
+                "mifidIiComplexInstrIndicator",
+                "legalEntityIdentifier",
+                "leiUltimateParentCompany"
+            }).
+            InitializeSession();
+            var fd = new OpenFileDialog() { Filter = "*.bbg|*.bbg" };
+            if (fd.ShowDialog() == DialogResult.OK)
+            {
+                var data = BloombergService.ProcessFile(fd.FileName);                
+                ShowSecuritiesInGrid(data);
+            }
         }
     }
 }

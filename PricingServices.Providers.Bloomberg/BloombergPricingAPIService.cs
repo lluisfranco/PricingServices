@@ -28,7 +28,7 @@ namespace PricingServices.Providers.Bloomberg
         public List<SecurityInfo> SecuritiesList { get; private set; }
         public List<string> FieldsList { get; private set; }
         public Credential Credential { get; private set; } = null;
-        public ServiceOptions Options { get; private set; }
+        public ServiceOptions Options { get; private set; } = new ServiceOptions();
         public IServiceResponse ServiceResponse { get; set; }
         public List<Security> CurrentSecuritiesList { get; set; }
 
@@ -37,10 +37,11 @@ namespace PricingServices.Providers.Bloomberg
         {
             // Generate unique resource indentifiers.
             var resourceIdPostfix = DateTime.UtcNow.ToString("yyyyMMddhhmmss");
-            UniverseId = $"myUniverse{resourceIdPostfix}";
-            FieldListId = $"myFieldList{resourceIdPostfix}";
-            TriggerId = $"myTrigger{resourceIdPostfix}";
-            RequestId = $"myReq{resourceIdPostfix}";
+            var sfx = Options.CustomerName.Substring(0, 3).ToUpper();
+            UniverseId = $"{sfx}Universe{resourceIdPostfix}";
+            FieldListId = $"{sfx}FieldList{resourceIdPostfix}";
+            TriggerId = $"{sfx}Trigger{resourceIdPostfix}";
+            RequestId = $"{sfx}Req{resourceIdPostfix}";
             Options = new ServiceOptions();
             ServiceResponse = new ServiceResponse()
             {
@@ -69,6 +70,10 @@ namespace PricingServices.Providers.Bloomberg
         public IPricingAPIService SetSecuritiesList(List<SecurityInfo> securitiesList)
         {
             SecuritiesList = securitiesList;
+            foreach (var security in SecuritiesList)
+            {
+                security.ProviderInternalName = FixSecurityName(security);
+            }
             return this;
         }
 
@@ -133,6 +138,7 @@ namespace PricingServices.Providers.Bloomberg
 
             return scheduledCatalog.Identifier;
         }
+
         private async Task<string> CreateUniverse(string catalog)
         {
             var uri = MakeUri($"/eap/catalogs/{catalog}/universes/");
@@ -150,11 +156,10 @@ namespace PricingServices.Providers.Bloomberg
 
         private IEnumerable<Security> GetSecuritiesList()
         {
-            foreach (var security in SecuritiesList)
-            {
-                security.ProviderInternalName = FixSecurityName(security);
-                //security.Name = security.Name; //FixSecurityName(security);
-            }
+            //foreach (var security in SecuritiesList)
+            //{
+            //    security.ProviderInternalName = FixSecurityName(security);
+            //}
             return SecuritiesList.Select(security =>
             new Security()
             {
@@ -165,7 +170,7 @@ namespace PricingServices.Providers.Bloomberg
         }
 
         //Bloomberg API is case sentitive
-        //CORP, GOVT, EQUITY must be Corp, Govt, Equity
+        //CORP, GOVT, EQUITY, CURNCY must be Corp, Govt, Equity, Curncy
         //In currencies must be added Curncy sufix 
         private string FixSecurityName(SecurityInfo security)
         {
@@ -182,6 +187,7 @@ namespace PricingServices.Providers.Bloomberg
                 name = FixSecurityNameCase(name, "Corp");
                 name = FixSecurityNameCase(name, "Govt");
                 name = FixSecurityNameCase(name, "Equity");
+                name = FixSecurityNameCase(name, "Curncy");
                 return name;
             }
             return name;

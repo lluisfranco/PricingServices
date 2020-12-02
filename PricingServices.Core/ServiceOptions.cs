@@ -2,6 +2,7 @@
 {
     public class ServiceOptions
     {
+        public string CustomerName { get; set; } = "FIM";
         public string ResponseOutputFolderName { get; set; } = "TempFiles";
         public string RequestFileDelimiter { get; } = "|";
         public ResponseRemoveFilesEnum RemoveFilesAfterResponse { get; set; }
