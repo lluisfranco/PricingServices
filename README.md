@@ -54,9 +54,9 @@ static async Task Main()
 }
 ```
 
-When creating a new SecurityInfo object you can specify the instrument type: Asset (default) or Curreny. This is because in the most providers currencies must add some prefix/suffix appart of the currency ISO code (USD).
+When creating a new SecurityInfo object you can specify the instrument type: Asset (default) or Currency. This is because in the most providers currencies must add some prefix/suffix appart of the currency ISO code (USD). Defining the security as a currency allows the service to auto correct this.
 
-You can also specify the sedcurity's type of identifier from a list of different types: Bloomberg TICKER (default), ISIN or, BB_GLOBAL.
+You can also specify the security's type of identifier from a list of different types: Bloomberg TICKER (default), ISIN or, BB_GLOBAL.
 
 ## Response type
 Response includes some metadata (id, time, elapsed time) and the list of securities and requested values.
